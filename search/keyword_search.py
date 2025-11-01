@@ -18,7 +18,7 @@ def keyword_search_command(query: str, limit: int = DEFAULT_SEARCH_LIMIT) -> Lis
     results = []
 
     for movie in movies:
-        if query in movie["title"]:
+        if query.lower() in movie["title"].lower():
             results.append(movie)
 
             if len(results) >= limit:
