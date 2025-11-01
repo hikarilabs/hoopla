@@ -1,0 +1,27 @@
+import json
+from typing import List
+from pathlib import Path
+
+DEFAULT_SEARCH_LIMIT = 5
+PROJECT_ROOT = Path(__file__).parent.parent
+
+def load_movies() -> List[dict]:
+    data_path = PROJECT_ROOT / "data" / "movies.json"
+    with open(data_path, "r") as f:
+        data = json.load(f)
+
+    return data["movies"]
+
+def keyword_search_command(query: str, limit: int = DEFAULT_SEARCH_LIMIT) -> List:
+
+    movies = load_movies()
+    results = []
+
+    for movie in movies:
+        if query in movie["title"]:
+            results.append(movie)
+
+            if len(results) >= limit:
+                break
+
+    return results
