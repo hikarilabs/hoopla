@@ -2,6 +2,8 @@ import json
 from typing import List
 from pathlib import Path
 
+from search.utils import remove_punctuation
+
 DEFAULT_SEARCH_LIMIT = 5
 PROJECT_ROOT = Path(__file__).parent.parent
 
@@ -18,7 +20,9 @@ def keyword_search_command(query: str, limit: int = DEFAULT_SEARCH_LIMIT) -> Lis
     results = []
 
     for movie in movies:
-        if query.lower() in movie["title"].lower():
+        query_punctuation = remove_punctuation(query)
+        movie_title_punctuation = remove_punctuation(movie["title"])
+        if query_punctuation in movie_title_punctuation:
             results.append(movie)
 
             if len(results) >= limit:
