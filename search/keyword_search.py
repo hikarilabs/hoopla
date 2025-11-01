@@ -2,7 +2,7 @@ import json
 from typing import List
 from pathlib import Path
 
-from search.utils import remove_punctuation
+from search.utils import remove_punctuation, tokenize_text
 
 DEFAULT_SEARCH_LIMIT = 5
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -20,12 +20,22 @@ def keyword_search_command(query: str, limit: int = DEFAULT_SEARCH_LIMIT) -> Lis
     results = []
 
     for movie in movies:
+
+        # process - remove text punctuation
         query_punctuation = remove_punctuation(query)
         movie_title_punctuation = remove_punctuation(movie["title"])
-        if query_punctuation in movie_title_punctuation:
-            results.append(movie)
 
-            if len(results) >= limit:
-                break
+        # process - tokenize text
+        query_tokens = tokenize_text(query_punctuation)
+        movie_title_tokens = tokenize_text(movie_title_punctuation)
+
+        for query_token in query_tokens:
+            for movie_token in movie_title_tokens:
+
+                if movie_token.find(query_token) != -1:
+                    results.append(movie)
+
+                    if len(results) >= limit:
+                        break
 
     return results
