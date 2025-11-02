@@ -2,6 +2,8 @@ import string
 from typing import List
 from search.search_utils import load_stop_words
 
+from nltk.stem import PorterStemmer
+
 
 def text_lowercase(text: str) -> str:
     return text.lower()
@@ -57,3 +59,14 @@ def text_remove_stop_words(tokens: List[str]) -> List[str]:
             valid_tokens.append(token)
 
     return valid_tokens
+
+
+def text_stem(tokens: List[str]) -> List[str]:
+    stemmer = PorterStemmer()
+
+    stem_tokens = []
+
+    for token in tokens:
+        stem_tokens.append(stemmer.stem(token))
+
+    return stem_tokens
