@@ -1,41 +1,40 @@
-import json
 from typing import List
-from pathlib import Path
 
-from search.utils import remove_punctuation, tokenize_text
+from search.search_utils import DEFAULT_SEARCH_LIMIT, load_movies
+from search.text_processor import (
+    text_lowercase,
+    text_remove_punctuation,
+    text_tokenize,
+    has_matching_token,
+    text_remove_stop_words,
+)
 
-DEFAULT_SEARCH_LIMIT = 5
-PROJECT_ROOT = Path(__file__).parent.parent
-
-def load_movies() -> List[dict]:
-    data_path = PROJECT_ROOT / "data" / "movies.json"
-    with open(data_path, "r") as f:
-        data = json.load(f)
-
-    return data["movies"]
 
 def keyword_search_command(query: str, limit: int = DEFAULT_SEARCH_LIMIT) -> List:
-
     movies = load_movies()
     results = []
 
     for movie in movies:
+        # process lower case
+        query_lower = text_lowercase(query)
+        movie_title_lower = text_lowercase(movie["title"])
 
         # process - remove text punctuation
-        query_punctuation = remove_punctuation(query)
-        movie_title_punctuation = remove_punctuation(movie["title"])
+        query_punctuation = text_remove_punctuation(query_lower)
+        movie_title_punctuation = text_remove_punctuation(movie_title_lower)
 
         # process - tokenize text
-        query_tokens = tokenize_text(query_punctuation)
-        movie_title_tokens = tokenize_text(movie_title_punctuation)
+        query_tokens = text_tokenize(query_punctuation)
+        movie_title_tokens = text_tokenize(movie_title_punctuation)
 
-        for query_token in query_tokens:
-            for movie_token in movie_title_tokens:
+        # process - remove stop words
+        query_tokens = text_remove_stop_words(query_tokens)
+        movie_title_tokens = text_remove_stop_words(movie_title_tokens)
 
-                if movie_token.find(query_token) != -1:
-                    results.append(movie)
+        if has_matching_token(query_tokens, movie_title_tokens):
+            results.append(movie)
 
-                    if len(results) >= limit:
-                        break
+            if len(results) >= limit:
+                break
 
     return results
