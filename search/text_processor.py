@@ -1,5 +1,5 @@
 import string
-from typing import List
+from typing import List, Tuple
 from search.search_utils import load_stop_words
 
 from nltk.stem import PorterStemmer
@@ -70,3 +70,22 @@ def text_stem(tokens: List[str]) -> List[str]:
         stem_tokens.append(stemmer.stem(token))
 
     return stem_tokens
+
+
+def process_text(text: str) -> List[str]:
+    # process lower case
+    lower = text_lowercase(text)
+
+    # process - remove text punctuation
+    punctuation = text_remove_punctuation(lower)
+
+    # process - tokenize text
+    tokens = text_tokenize(punctuation)
+
+    # process - remove stop words
+    clean_stop_words = text_remove_stop_words(tokens)
+
+    # process - stemming
+    stem_words = text_stem(clean_stop_words)
+
+    return stem_words
