@@ -30,8 +30,8 @@ def main() -> None:
             print(f"Searching for: {args.query}")
 
             search_result = keyword_search_command(args.query)
-            for idx, results in enumerate(search_result, 1):
-                print(f"{idx}. ({results['id']}) {results['title']}")
+            for idx, result in search_result:
+                print(f"{idx}. {result}")
         case _:
             parser.print_help()
 

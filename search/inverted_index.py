@@ -1,5 +1,6 @@
 import pickle
 from collections import defaultdict
+from typing import List
 
 from search.text_processor import process_text
 from search.search_utils import PROJECT_ROOT, load_movies
@@ -8,7 +9,7 @@ from search.search_utils import PROJECT_ROOT, load_movies
 class InvertedIndex:
     def __init__(self):
         self.index = defaultdict(set)
-        self.docmap: dict[int, dict] = {}
+        self.docmap: dict[int, str] = {}
         self.index_path = PROJECT_ROOT / "cache" / "index.pkl"
         self.docmap_path = PROJECT_ROOT / "cache" / "docmap.pkl"
 
@@ -24,9 +25,20 @@ class InvertedIndex:
         with open(self.index_path, "wb") as i:
             pickle.dump(self.index, i)
         with open(self.docmap_path, "wb") as d:
-            pickle.dump(self.docmap_path, d)
+            pickle.dump(self.docmap, d)
 
-    def get_documents(self, query):
+    def load(self):
+        try:
+            with open(self.index_path, "rb") as f:
+                self.index = pickle.load(f)
+            with open(self.docmap_path, "rb") as f:
+                self.docmap = pickle.load(f)
+
+        except FileNotFoundError as e:
+            print(e)
+            raise FileNotFoundError("Index File des not exists")
+
+    def get_documents(self, query) -> List:
         doc_ids = self.index.get(query, set())
         return sorted(list(doc_ids))
 
