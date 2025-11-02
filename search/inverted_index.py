@@ -1,5 +1,5 @@
 import pickle
-from collections import defaultdict
+from collections import defaultdict, Counter
 from typing import List
 
 from search.text_processor import process_text
@@ -10,8 +10,10 @@ class InvertedIndex:
     def __init__(self):
         self.index = defaultdict(set)
         self.docmap: dict[int, str] = {}
+        self.term_frequencies: dict[int, Counter] = {}
         self.index_path = PROJECT_ROOT / "cache" / "index.pkl"
         self.docmap_path = PROJECT_ROOT / "cache" / "docmap.pkl"
+        self.term_frequencies_path = PROJECT_ROOT / "cache" / "term_frequencies.pkl"
 
     def build(self):
         movies = load_movies()
