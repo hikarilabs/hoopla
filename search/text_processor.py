@@ -1,5 +1,4 @@
 import string
-from typing import List, Tuple
 from search.search_utils import load_stop_words
 
 from nltk.stem import PorterStemmer
@@ -15,7 +14,7 @@ def text_remove_punctuation(text: str) -> str:
     return text
 
 
-def text_tokenize(text: str, delimiter: str = " ") -> List:
+def text_tokenize(text: str, delimiter: str = " ") -> list:
     """
     Utility function to tokenize a given text
     :param text: The text
@@ -33,7 +32,7 @@ def text_tokenize(text: str, delimiter: str = " ") -> List:
     return valid_tokens
 
 
-def has_matching_token(query_tokens: List[str], movie_title_tokens: List[str]) -> bool:
+def has_matching_token(query_tokens: list[str], movie_title_tokens: list[str]) -> bool:
     """
 
     :param query_tokens:
@@ -47,7 +46,7 @@ def has_matching_token(query_tokens: List[str], movie_title_tokens: List[str]) -
     return False
 
 
-def text_remove_stop_words(tokens: List[str]) -> List[str]:
+def text_remove_stop_words(tokens: list[str]) -> list[str]:
     stop_words = load_stop_words()
 
     valid_tokens = []
@@ -61,7 +60,7 @@ def text_remove_stop_words(tokens: List[str]) -> List[str]:
     return valid_tokens
 
 
-def text_stem(tokens: List[str]) -> List[str]:
+def text_stem(tokens: list[str]) -> list[str]:
     stemmer = PorterStemmer()
 
     stem_tokens = []
@@ -72,7 +71,7 @@ def text_stem(tokens: List[str]) -> List[str]:
     return stem_tokens
 
 
-def process_text(text: str) -> List[str]:
+def process_text(text: str) -> list[str]:
     # process lower case
     lower = text_lowercase(text)
 

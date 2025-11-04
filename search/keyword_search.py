@@ -1,11 +1,9 @@
-from typing import List
-
 from search.inverted_index import InvertedIndex
 from search.search_utils import DEFAULT_SEARCH_LIMIT
-from search.text_processor import process_text, has_matching_token
+from search.text_processor import process_text
 
 
-def keyword_search_command(query: str, limit: int = DEFAULT_SEARCH_LIMIT) -> List:
+def keyword_search_command(query: str, limit: int = DEFAULT_SEARCH_LIMIT) -> list:
     idx = InvertedIndex()
     try:
         idx.load()
@@ -40,3 +38,9 @@ def build_command() -> None:
     idx = InvertedIndex()
     idx.build()
     idx.save()
+
+
+def term_frequencies_command(doc_id: int, term: str) -> int:
+    idx = InvertedIndex()
+    idx.load()
+    return idx.get_tf(doc_id, term)
