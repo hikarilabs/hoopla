@@ -54,7 +54,8 @@ class InvertedIndex:
             raise ValueError("term must be a single token")
 
         token = tokens[0]
-        return self.term_frequencies[doc_id][token]
+
+        return self.term_frequencies[int(doc_id)][token]
 
     def __add_document(self, doc_id: int, doc_description: str) -> None:
         tokens = process_text(doc_description)
@@ -62,3 +63,4 @@ class InvertedIndex:
             self.index[token].add(doc_id)
 
         self.term_frequencies[doc_id].update(tokens)
+
