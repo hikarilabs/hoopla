@@ -2,8 +2,9 @@ import pickle
 import math
 from collections import defaultdict, Counter
 
+
 from search.text_processor import process_text
-from search.search_utils import PROJECT_ROOT, load_movies
+from search.search_utils import PROJECT_ROOT, BM25_K1, load_movies
 
 
 class InvertedIndex:
@@ -49,12 +50,12 @@ class InvertedIndex:
         return sorted(list(doc_ids))
 
     def get_tf(self, doc_id: int, term: str) -> int:
-        token = self._process_term(term)
+        token = self._tokenize_term(term)
 
         return self.term_frequencies[doc_id].get(token)
 
     def get_idf(self, term: str) -> float:
-        token = self._process_term(term)
+        token = self._tokenize_term(term)
 
         doc_count = len(self.docmap)
         term_doc_count = len(self.index.get(token))
@@ -68,8 +69,24 @@ class InvertedIndex:
 
         return tf * idf
 
+    def get_bm25_idf(self, term: str) -> float:
+        token = self._tokenize_term(term)
 
-    def _process_term(self, term):
+        total_documents = len(self.docmap)
+        doc_count = len(self.index.get(token))
+
+        return math.log((total_documents - doc_count + 0.5) / (doc_count + 0.5) + 1)
+
+    def get_bm25_tf(self, doc_id, term, k1=BM25_K1) -> float:
+        token = self._tokenize_term(term)
+
+        tf = self.get_tf(doc_id, token)
+        tf_saturation = (tf * (k1 + 1)) / (tf + k1)
+
+        return tf_saturation
+
+
+    def _tokenize_term(self, term):
         tokens = process_text(term)
 
         if len(tokens) != 1:

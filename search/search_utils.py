@@ -6,6 +6,8 @@ from pathlib import Path
 DEFAULT_SEARCH_LIMIT = 5
 PROJECT_ROOT = Path(__file__).parent.parent
 
+BM25_K1 = 1.5
+
 
 def load_movies() -> list[dict[int, str]]:
     data_path = PROJECT_ROOT / "data" / "movies.json"

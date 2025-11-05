@@ -1,5 +1,5 @@
 from search.inverted_index import InvertedIndex
-from search.search_utils import DEFAULT_SEARCH_LIMIT
+from search.search_utils import DEFAULT_SEARCH_LIMIT, BM25_K1
 from search.text_processor import process_text
 import math
 
@@ -58,3 +58,15 @@ def tf_idf_command(doc_id: int, term: str) -> float:
     idx.load()
 
     return idx.get_tf_idf(doc_id, term)
+
+def bm25idf_command(term: str) -> float:
+    idx = InvertedIndex()
+    idx.load()
+
+    return idx.get_bm25_idf(term)
+
+def bm25tf_command(doc_id: int, term: str, k1 = BM25_K1) -> float:
+    idx = InvertedIndex()
+    idx.load()
+
+    return idx.get_bm25_tf(doc_id, term, k1)
