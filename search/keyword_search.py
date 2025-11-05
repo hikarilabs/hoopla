@@ -1,6 +1,7 @@
 from search.inverted_index import InvertedIndex
 from search.search_utils import DEFAULT_SEARCH_LIMIT
 from search.text_processor import process_text
+import math
 
 
 def keyword_search_command(query: str, limit: int = DEFAULT_SEARCH_LIMIT) -> list:
@@ -40,7 +41,20 @@ def build_command() -> None:
     idx.save()
 
 
-def term_frequencies_command(doc_id: int, term: str) -> int:
+def tf_command(doc_id: int, term: str) -> int:
     idx = InvertedIndex()
     idx.load()
     return idx.get_tf(doc_id, term)
+
+
+def idf_calculator_command(term: str) -> float:
+    idx = InvertedIndex()
+    idx.load()
+
+    return idx.get_idf(term)
+
+def tf_idf_command(doc_id: int, term: str) -> float:
+    idx = InvertedIndex()
+    idx.load()
+
+    return idx.get_tf_idf(doc_id, term)

@@ -1,4 +1,5 @@
 import pickle
+import math
 from collections import defaultdict, Counter
 
 from search.text_processor import process_text
@@ -48,6 +49,27 @@ class InvertedIndex:
         return sorted(list(doc_ids))
 
     def get_tf(self, doc_id: int, term: str) -> int:
+        token = self._process_term(term)
+
+        return self.term_frequencies[doc_id].get(token)
+
+    def get_idf(self, term: str) -> float:
+        token = self._process_term(term)
+
+        doc_count = len(self.docmap)
+        term_doc_count = len(self.index.get(token))
+
+        return math.log((doc_count + 1) / (term_doc_count + 1))
+
+    def get_tf_idf(self, doc_id: int, term: str) -> float:
+
+        tf = self.get_tf(doc_id, term)
+        idf = self.get_idf(term)
+
+        return tf * idf
+
+
+    def _process_term(self, term):
         tokens = process_text(term)
 
         if len(tokens) != 1:
@@ -55,7 +77,7 @@ class InvertedIndex:
 
         token = tokens[0]
 
-        return self.term_frequencies[int(doc_id)][token]
+        return token
 
     def __add_document(self, doc_id: int, doc_description: str) -> None:
         tokens = process_text(doc_description)
