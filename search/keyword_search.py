@@ -1,7 +1,6 @@
 from search.inverted_index import InvertedIndex
 from search.search_utils import DEFAULT_SEARCH_LIMIT, BM25_K1
 from search.text_processor import process_text
-import math
 
 
 def keyword_search_command(query: str, limit: int = DEFAULT_SEARCH_LIMIT) -> list:
@@ -70,3 +69,8 @@ def bm25tf_command(doc_id: int, term: str, k1 = BM25_K1) -> float:
     idx.load()
 
     return idx.get_bm25_tf(doc_id, term, k1)
+
+def bm25search_command(query: str, limit: int = DEFAULT_SEARCH_LIMIT) -> list[dict]:
+    idx = InvertedIndex()
+    idx.load()
+    return idx.bm25_search(query, limit)
