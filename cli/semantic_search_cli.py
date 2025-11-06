@@ -8,7 +8,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from search.semantic_search import verify_model
+from search.semantic_search import verify_model, embedd_text
 
 def main():
 
@@ -17,12 +17,19 @@ def main():
 
     subparsers.add_parser("verify", help="Check which embedding model is used")
 
+    embedd_parser = subparsers.add_parser("embed_text", help="Generate a text embedd")
+    embedd_parser.add_argument("text", type=str, help="Text to create its embeddings")
+
+
+
     args = parser.parse_args()
 
     match args.command:
 
         case "verify":
             verify_model()
+        case "embed_text":
+            embedd_text(args.text)
         case _:
             parser.print_help()
 
