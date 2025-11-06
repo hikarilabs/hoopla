@@ -8,4 +8,5 @@ dependencies = [
     "nltk==3.9.1",
     "pytest>=8.4.2",
     "ruff>=0.14.3",
+    "sentence-transformers>=5.1.2",
 ]
