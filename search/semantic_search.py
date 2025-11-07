@@ -143,3 +143,16 @@ def search_query(query: str, limit: int) -> None:
         print(f"{idx}. {result[1]["title"]} (score: {result[0]:.4f})")
         print(f"{result[1]["description"]}\n")
 
+
+def chunk_text_command(text: str, chunk_size: int):
+
+    text_split = text.split(" ")
+    total_characters = len(text)
+    chunks = []
+
+    for i in range(0, len(text_split), chunk_size):
+        chunks.append(text_split[i: i + chunk_size])
+
+    print(f"Chunking {total_characters} characters")
+    for idx, chunk in enumerate(chunks, 1):
+        print(f"{idx}. {" ".join(chunk)}")
