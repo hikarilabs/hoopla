@@ -1,4 +1,10 @@
+from typing import Any
+
+import numpy as np
+from numpy import ndarray, dtype
+
 from sentence_transformers import SentenceTransformer
+from search.search_utils import PROJECT_ROOT, load_movies
 
 
 class SemanticSearch:
@@ -8,16 +14,62 @@ class SemanticSearch:
         self.documents = None
         self.document_map = {}
 
-    def build_embeddings(self, documents: list[dict]):
+    def search(self, query: str, limit: int):
+
+        if self.embeddings is None:
+            raise ValueError("No embeddings loaded. Call `load_or_create_embeddings` first.")
+
+        query_embedding = self.generate_embedding(query)
+
+        results = []
+
+        for idx, embedding in enumerate(self.embeddings):
+            similarity = cosine_similarity(query_embedding, embedding)
+            results.append(
+                (similarity, self.documents[idx])
+            )
+
+        results.sort(key=lambda x: x[0], reverse=True)
+
+        return results[: limit]
+
+    def build_embeddings(self, documents: list[dict]) -> ndarray[tuple[Any, ...], dtype[Any]]:
         self.documents = documents
 
+        movies = []
         for document in documents:
             doc_id = document["id"]
             doc_description = document["description"]
-            self.document_map[doc_id] = doc_description
+            doc_title = document["title"]
+            self.document_map[doc_id] = {
+                "title": doc_title,
+                "description": doc_description
+            }
 
             movie = f"{document['title']}: {document['description']}"
+            movies.append(movie)
 
+        movies_embeddings_file = PROJECT_ROOT / "cache" / "movie_embeddings.npy"
+
+        movies_embeddings = self.model.encode(movies)
+        np.save(movies_embeddings_file, movies_embeddings)
+
+        self.embeddings = movies_embeddings
+
+        return self.embeddings
+
+
+    def load_or_create_embeddings(self, documents: list[dict]) -> list[np.ndarray] | None:
+        self.documents = documents
+
+        movie_embeddings_file = PROJECT_ROOT / "cache" / "movie_embeddings.npy"
+
+        if movie_embeddings_file.is_file():
+            self.embeddings = np.load(movie_embeddings_file)
+            if len(self.embeddings) == len(self.documents):
+                return self.embeddings
+        else:
+            self.build_embeddings(documents)
 
 
     def generate_embedding(self, text):
@@ -28,7 +80,15 @@ class SemanticSearch:
 
         return embedding
 
+def cosine_similarity(vec1, vec2):
+    dot_product = np.dot(vec1, vec2)
+    norm1 = np.linalg.norm(vec1)
+    norm2 = np.linalg.norm(vec2)
 
+    if norm1 == 0 or norm2 == 0:
+        return 0.0
+
+    return dot_product / (norm1 * norm2)
 
 
 def verify_model():
@@ -47,3 +107,39 @@ def embedd_text(text):
     print(f"Text: {text}")
     print(f"First 3 dimensions: {embedding[:3]}")
     print(f"Dimensions: {embedding.shape[0]}")
+
+
+def verify_embeddings():
+    semantic_search = SemanticSearch()
+
+    movies = load_movies()
+
+    semantic_search.load_or_create_embeddings(movies)
+
+    print(f"Number of docs:   {len(movies)}")
+    print(f"Embeddings shape: {semantic_search.embeddings.shape[0]} vectors in "
+          f"{semantic_search.embeddings.shape[1]} dimensions")
+
+def embed_query_text(query):
+    semantic_search = SemanticSearch()
+
+    query_embed = semantic_search.generate_embedding(query)
+
+    print(f"Query: {query}")
+    print(f"First 5 dimensions: {query_embed[:5]}")
+    print(f"Shape: {query_embed.shape}")
+
+
+def search_query(query: str, limit: int) -> None:
+    semantic_search = SemanticSearch()
+
+    movies = load_movies()
+
+    semantic_search.load_or_create_embeddings(movies)
+
+    results = semantic_search.search(query, limit)
+
+    for idx, result in enumerate(results, 1):
+        print(f"{idx}. {result[1]["title"]} (score: {result[0]:.4f})")
+        print(f"{result[1]["description"]}\n")
+

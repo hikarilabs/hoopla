@@ -8,7 +8,8 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from search.semantic_search import verify_model, embedd_text
+from search.semantic_search import verify_model, embedd_text, verify_embeddings, embed_query_text, search_query
+
 
 def main():
 
@@ -16,11 +17,17 @@ def main():
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     subparsers.add_parser("verify", help="Check which embedding model is used")
+    subparsers.add_parser("verify_embeddings", help="Check which embedding model is used")
 
     embedd_parser = subparsers.add_parser("embed_text", help="Generate a text embedd")
     embedd_parser.add_argument("text", type=str, help="Text to create its embeddings")
 
+    query_parser = subparsers.add_parser("embedquery", help="Generate a query embedd")
+    query_parser.add_argument("query", type=str, help="Query embedding")
 
+    user_search_query = subparsers.add_parser("search", help="Search for a user query")
+    user_search_query.add_argument("query", type=str, help="User query")
+    user_search_query.add_argument("--limit", type=int, nargs='?', default=5, help="Tunable result list")
 
     args = parser.parse_args()
 
@@ -28,8 +35,14 @@ def main():
 
         case "verify":
             verify_model()
+        case "verify_embeddings":
+            verify_embeddings()
         case "embed_text":
             embedd_text(args.text)
+        case "embedquery":
+            embed_query_text(args.query)
+        case "search":
+            search_query(args.query, args.limit)
         case _:
             parser.print_help()
 
