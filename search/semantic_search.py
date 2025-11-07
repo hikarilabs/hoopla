@@ -4,6 +4,21 @@ from sentence_transformers import SentenceTransformer
 class SemanticSearch:
     def __init__(self):
         self.model = SentenceTransformer('all-MiniLM-L6-v2')
+        self.embeddings = None
+        self.documents = None
+        self.document_map = {}
+
+    def build_embeddings(self, documents: list[dict]):
+        self.documents = documents
+
+        for document in documents:
+            doc_id = document["id"]
+            doc_description = document["description"]
+            self.document_map[doc_id] = doc_description
+
+            movie = f"{document['title']}: {document['description']}"
+
+
 
     def generate_embedding(self, text):
         if text == "" or text == " ":
