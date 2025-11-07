@@ -144,14 +144,21 @@ def search_query(query: str, limit: int) -> None:
         print(f"{result[1]["description"]}\n")
 
 
-def chunk_text_command(text: str, chunk_size: int):
+def chunk_text_command(text: str, chunk_size: int, overlap: int):
 
     text_split = text.split(" ")
     total_characters = len(text)
     chunks = []
 
-    for i in range(0, len(text_split), chunk_size):
-        chunks.append(text_split[i: i + chunk_size])
+    if overlap == 0:
+        for i in range(0, len(text_split), chunk_size):
+            chunks.append(text_split[i: i + chunk_size])
+    else:
+        for i in range(0, len(text_split), chunk_size):
+            if i == 0:
+                chunks.append(text_split[i: i + chunk_size])
+            else:
+                chunks.append(text_split[i - overlap: i + chunk_size])
 
     print(f"Chunking {total_characters} characters")
     for idx, chunk in enumerate(chunks, 1):
