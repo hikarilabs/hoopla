@@ -1,3 +1,4 @@
+import re
 from typing import Any
 
 import numpy as np
@@ -144,10 +145,7 @@ def search_query(query: str, limit: int) -> None:
         print(f"{result[1]["description"]}\n")
 
 
-def chunk_text_command(text: str, chunk_size: int, overlap: int):
-
-    text_split = text.split(" ")
-    total_characters = len(text)
+def _chunk_text(text_split, chunk_size, overlap):
     chunks = []
 
     if overlap == 0:
@@ -160,6 +158,26 @@ def chunk_text_command(text: str, chunk_size: int, overlap: int):
             else:
                 chunks.append(text_split[i - overlap: i + chunk_size])
 
+    return chunks
+
+def chunk_text_command(text: str, chunk_size: int, overlap: int) -> None:
+
+    text_split = text.split(" ")
+    total_characters = len(text)
+
+    chunks = _chunk_text(text_split, chunk_size, overlap)
+
     print(f"Chunking {total_characters} characters")
+    for idx, chunk in enumerate(chunks, 1):
+        print(f"{idx}. {" ".join(chunk)}")
+
+
+def semantic_chunk_command(text: str, chunk_size: int, overlap: int) -> None:
+    text_split = re.split(r"(?<=[.!?])\s+", text)
+    total_characters = len(text)
+
+    chunks = _chunk_text(text_split, chunk_size, overlap)
+
+    print(f" Semantically chunking {total_characters} characters")
     for idx, chunk in enumerate(chunks, 1):
         print(f"{idx}. {" ".join(chunk)}")
