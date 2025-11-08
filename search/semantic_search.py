@@ -9,8 +9,8 @@ from search.search_utils import PROJECT_ROOT, load_movies
 
 
 class SemanticSearch:
-    def __init__(self):
-        self.model = SentenceTransformer('all-MiniLM-L6-v2')
+    def __init__(self, model_name: str):
+        self.model = SentenceTransformer(model_name)
         self.embeddings = None
         self.documents = None
         self.document_map = {}
@@ -70,7 +70,7 @@ class SemanticSearch:
             if len(self.embeddings) == len(self.documents):
                 return self.embeddings
         else:
-            self.build_embeddings(documents)
+            return self.build_embeddings(documents)
 
 
     def generate_embedding(self, text):
@@ -93,14 +93,14 @@ def cosine_similarity(vec1, vec2):
 
 
 def verify_model():
-    semantic_search = SemanticSearch()
+    semantic_search = SemanticSearch('all-MiniLM-L6-v2')
 
     print(f"Model loaded: {semantic_search.model}")
     print(f"Max sequence length: {semantic_search.model.max_seq_length}")
 
 
 def embedd_text(text):
-    semantic_search = SemanticSearch()
+    semantic_search = SemanticSearch('all-MiniLM-L6-v2')
 
     embedding = semantic_search.generate_embedding(text)
     print(embedding)
@@ -111,7 +111,7 @@ def embedd_text(text):
 
 
 def verify_embeddings():
-    semantic_search = SemanticSearch()
+    semantic_search = SemanticSearch('all-MiniLM-L6-v2')
 
     movies = load_movies()
 
@@ -122,7 +122,7 @@ def verify_embeddings():
           f"{semantic_search.embeddings.shape[1]} dimensions")
 
 def embed_query_text(query):
-    semantic_search = SemanticSearch()
+    semantic_search = SemanticSearch('all-MiniLM-L6-v2')
 
     query_embed = semantic_search.generate_embedding(query)
 
@@ -132,7 +132,7 @@ def embed_query_text(query):
 
 
 def search_query(query: str, limit: int) -> None:
-    semantic_search = SemanticSearch()
+    semantic_search = SemanticSearch('all-MiniLM-L6-v2')
 
     movies = load_movies()
 
