@@ -6,14 +6,15 @@ from typing import Any
 
 DEFAULT_SEARCH_LIMIT = 5
 SCORE_PRECISION = 3
+DOCUMENT_PREVIEW_LENGTH = 100
 PROJECT_ROOT = Path(__file__).parent.parent
+MOVIES_DATA_PATH = PROJECT_ROOT / "data" / "movies.json"
 
 BM25_K1 = 1.5
 BM25_B = 0.7
 
 
-def load_movies() -> list[dict[int, str]]:
-    data_path = PROJECT_ROOT / "data" / "movies.json"
+def load_movies(data_path) -> list[dict[int, str]]:
     with open(data_path, "r") as f:
         data = json.load(f)
     return data["movies"]

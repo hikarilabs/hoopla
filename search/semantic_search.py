@@ -60,7 +60,7 @@ class SemanticSearch:
         return self.embeddings
 
 
-    def load_or_create_embeddings(self, documents: list[dict]) -> list[np.ndarray] | None:
+    def load_or_create_embeddings(self, documents: list[dict]) -> ndarray[tuple[Any, ...], dtype[Any]] | None | Any:
         self.documents = documents
 
         movie_embeddings_file = PROJECT_ROOT / "cache" / "movie_embeddings.npy"
@@ -74,6 +74,11 @@ class SemanticSearch:
 
 
     def generate_embedding(self, text):
+        """
+        Generate a text embedding using the initialised model
+        :param text:
+        :return:
+        """
         if text == "" or text == " ":
             raise ValueError("The text should not be an empty string")
 
