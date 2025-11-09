@@ -5,7 +5,7 @@ import numpy as np
 
 from search.semantic_search import SemanticSearch, cosine_similarity
 from search.search_utils import PROJECT_ROOT, MOVIES_DATA_PATH, load_movies, SCORE_PRECISION, DOCUMENT_PREVIEW_LENGTH, \
-    DEFAULT_SEARCH_LIMIT
+    DEFAULT_SEARCH_LIMIT, _semantic_chunk_text
 
 
 class ChunkedSemanticSearch(SemanticSearch):
@@ -124,24 +124,6 @@ class ChunkedSemanticSearch(SemanticSearch):
             )
 
         return results
-
-
-def _semantic_chunk_text(text, chunk_size, overlap):
-
-    sentences = re.split(r"(?<=[.!?])\s+", text)
-    chunks = []
-
-    i = 0
-    n_sentences = len(sentences)
-
-    while i < n_sentences:
-        chunk_sentences = sentences[i: i + chunk_size]
-        if chunks and len(chunk_sentences) <= overlap:
-            break
-        chunks.append(" ".join(chunk_sentences))
-        i += chunk_size - overlap
-
-    return chunks
 
 
 def embed_chunks_command():

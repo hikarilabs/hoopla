@@ -5,7 +5,8 @@ import numpy as np
 from numpy import ndarray, dtype
 
 from sentence_transformers import SentenceTransformer
-from search.search_utils import PROJECT_ROOT, load_movies
+
+from search.search_utils import PROJECT_ROOT, load_movies, _semantic_chunk_text
 
 
 class SemanticSearch:
@@ -178,11 +179,11 @@ def chunk_text_command(text: str, chunk_size: int, overlap: int) -> None:
 
 
 def semantic_chunk_command(text: str, chunk_size: int, overlap: int) -> None:
-    text_split = re.split(r"(?<=[.!?])\s+", text)
+
     total_characters = len(text)
 
-    chunks = _chunk_text(text_split, chunk_size, overlap)
+    chunks = _semantic_chunk_text(text, chunk_size, overlap)
 
     print(f" Semantically chunking {total_characters} characters")
     for idx, chunk in enumerate(chunks, 1):
-        print(f"{idx}. {" ".join(chunk)}")
+        print(f"{idx}. {chunk}")

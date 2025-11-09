@@ -1,4 +1,5 @@
 import json
+import re
 
 from pathlib import Path
 from typing import Any
@@ -49,3 +50,24 @@ def format_search_result(
         "score": round(score, SCORE_PRECISION),
         "metadata": metadata if metadata else {},
     }
+
+def _semantic_chunk_text(text, chunk_size, overlap) -> list:
+
+    strip_text = text.strip()
+    if len(strip_text) == 0:
+        return []
+
+    sentences = re.split(r"(?<=[.!?])\s+", strip_text)
+    chunks = []
+
+    i = 0
+    n_sentences = len(sentences)
+
+    while i < n_sentences:
+        chunk_sentences = sentences[i: i + chunk_size]
+        if chunks and len(chunk_sentences) <= overlap:
+            break
+        chunks.append(" ".join(chunk_sentences))
+        i += chunk_size - overlap
+
+    return chunks
