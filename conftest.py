@@ -1,5 +1,5 @@
 """
-Add the root of the folder to the
+Add the root of the folder to enable module discovery at root level
 """
 
 import sys
