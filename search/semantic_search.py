@@ -1,4 +1,3 @@
-import re
 from typing import Any
 
 import numpy as np
@@ -6,7 +5,7 @@ from numpy import ndarray, dtype
 
 from sentence_transformers import SentenceTransformer
 
-from search.search_utils import PROJECT_ROOT, load_movies, _semantic_chunk_text
+from search.search_utils import PROJECT_ROOT, MOVIES_DATA_PATH, load_movies, _semantic_chunk_text
 
 
 class SemanticSearch:
@@ -119,7 +118,7 @@ def embedd_text(text):
 def verify_embeddings():
     semantic_search = SemanticSearch('all-MiniLM-L6-v2')
 
-    movies = load_movies()
+    movies = load_movies(MOVIES_DATA_PATH)
 
     semantic_search.load_or_create_embeddings(movies)
 
@@ -140,7 +139,7 @@ def embed_query_text(query):
 def search_query(query: str, limit: int) -> None:
     semantic_search = SemanticSearch('all-MiniLM-L6-v2')
 
-    movies = load_movies()
+    movies = load_movies(MOVIES_DATA_PATH)
 
     semantic_search.load_or_create_embeddings(movies)
 
