@@ -12,3 +12,5 @@ wheels/
 # IDE Files
 .idea
 
+# So So So Secret
+.env
