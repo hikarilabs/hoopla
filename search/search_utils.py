@@ -6,6 +6,7 @@ from typing import Any
 
 
 DEFAULT_SEARCH_LIMIT = 5
+DEFAULT_ALPHA = 0.5
 SCORE_PRECISION = 3
 DOCUMENT_PREVIEW_LENGTH = 100
 PROJECT_ROOT = Path(__file__).parent.parent

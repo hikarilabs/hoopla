@@ -4,7 +4,8 @@ from collections import defaultdict, Counter
 
 
 from search.text_processor import process_text
-from search.search_utils import PROJECT_ROOT, BM25_K1, BM25_B, load_movies, DEFAULT_SEARCH_LIMIT, format_search_result
+from search.search_utils import PROJECT_ROOT, BM25_K1, BM25_B, load_movies, DEFAULT_SEARCH_LIMIT, format_search_result, \
+    SCORE_PRECISION, MOVIES_DATA_PATH
 
 
 class InvertedIndex:
@@ -19,11 +20,11 @@ class InvertedIndex:
         self.doc_lengths_path = PROJECT_ROOT / "cache" / "doc_lengths.pkl"
 
     def build(self):
-        movies = load_movies()
+        movies = load_movies(MOVIES_DATA_PATH)
         for movie in movies:
-            doc_id: int = movie["id"]
+            doc_id = movie["id"]
             doc_description = f"{movie['title']} {movie['description']}"
-            self.docmap[doc_id] = doc_description
+            self.docmap[doc_id] = movie
             self.__add_document(doc_id, doc_description)
 
     def save(self):
@@ -119,7 +120,10 @@ class InvertedIndex:
         for doc_id, score in sorted_docs[:limit]:
             doc = self.docmap[doc_id]
             formatted_result = {
-                "id": doc["id"]
+                "id": doc["id"],
+                "title": doc["title"],
+                "document": doc["description"],
+                "score": round(score, SCORE_PRECISION)
             }
             results.append(formatted_result)
 
