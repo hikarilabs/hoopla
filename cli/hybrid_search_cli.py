@@ -7,7 +7,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from search.hybrid_search import normalize_command, weighted_search_command
+from search.hybrid_search import normalize_command, weighted_search_command, rrf_search_command
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Hybrid Search CLI")
@@ -20,6 +20,12 @@ def main() -> None:
     weighted_search.add_argument("query", type=str, help="User search query")
     weighted_search.add_argument("--alpha", type=float, default=0.5, help="Weight for BM25 vs semantic")
     weighted_search.add_argument("--limit", type=int, default=5, help="Number of results to return")
+
+    rrf_search = subparsers.add_parser("rrf-search", help="Search using reciprocal rank fusion")
+    rrf_search.add_argument("query", type=str, help="User search query")
+    rrf_search.add_argument("--k", type=int, default=60, help="Weight for low-rank vs high rank results")
+    rrf_search.add_argument("--limit", type=int, default=5, help="Number of results to return")
+
 
     args = parser.parse_args()
 
@@ -47,6 +53,19 @@ def main() -> None:
                     )
                 print(f"   {res['document'][:100]}...")
                 print()
+        case "rrf-search":
+            results = rrf_search_command(args.query, args.k, args.limit)
+
+            for i, res in enumerate(results["results"], 1):
+                print(f"{i}. {res['title']}")
+                print(f"   RRF Score: {res.get('score', 0):.3f}")
+                if "bm25_score" in res.keys() and "semantic_score" in res.keys():
+                    print(
+                        f"   BM25: {res['bm25_score']:.3f}, Semantic: {res['semantic_score']:.3f}"
+                    )
+                print(f"   {res['document'][:100]}...")
+                print()
+
         case _:
             parser.print_help()
 
