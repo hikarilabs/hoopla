@@ -128,10 +128,43 @@ def gemini_client(query: str, enhance: str):
                     - "action movie with bear" -> "action thriller bear chase fight adventure"
                     - "comedy with bear" -> "comedy funny bear humor lighthearted"
                     
-                    Query: "{query}"
+                    Query: "{query}"        
                     """
         case _:
             raise NotImplementedError("The value for query enhancement is not supported. Valid values: spell, rewrite")
+
+    response = client.models.generate_content(
+        model="gemini-2.0-flash-001",
+        contents=prompt
+    )
+
+    return response.text
+
+
+def gemini_client_document(query:str, rerank_method: str, document: dict):
+    api_key = os.environ.get("GEMINI_API_KEY")
+    client = genai.Client(api_key=api_key)
+
+    prompt = ""
+
+    match rerank_method:
+        case "individual":
+            prompt = f"""Rate how well this movie matches the search query.
+
+                    Query: "{query}"
+                    Movie: {document.get("title", "")} - {document.get("document", "")}
+                    
+                    Consider:
+                    - Direct relevance to query
+                    - User intent (what they're looking for)
+                    - Content appropriateness
+                    
+                    Rate 0-10 (10 = perfect match).
+                    Give me ONLY the number in your response, no other text or explanation.
+                    
+                    Score:"""
+        case _:
+            raise NotImplementedError("The value for rerank method is not supported. Valid values: individual")
 
     response = client.models.generate_content(
         model="gemini-2.0-flash-001",

@@ -1,8 +1,11 @@
 import os
 
+from tenacity import sleep
+
 from search.keyword_search import InvertedIndex
 from search.chunked_semantic_search import ChunkedSemanticSearch
-from search.search_utils import DEFAULT_SEARCH_LIMIT, DEFAULT_ALPHA, MOVIES_DATA_PATH, load_movies, gemini_client
+from search.search_utils import DEFAULT_SEARCH_LIMIT, DEFAULT_ALPHA, MOVIES_DATA_PATH, load_movies, gemini_client, \
+    gemini_client_document
 
 
 class HybridSearch:
@@ -199,7 +202,7 @@ def weighted_search_command(query: str, alpha: float = DEFAULT_ALPHA, limit: int
     }
 
 
-def rrf_search_command(query: str, enhance: str, k: int, limit: int = DEFAULT_SEARCH_LIMIT) -> dict:
+def rrf_search_command(query: str, enhance: str, re_rank: str, k: int, limit: int = DEFAULT_SEARCH_LIMIT) -> dict:
 
     movies = load_movies(MOVIES_DATA_PATH)
 
@@ -210,6 +213,18 @@ def rrf_search_command(query: str, enhance: str, k: int, limit: int = DEFAULT_SE
         print(f"Enhanced query ({enhance}): '{query}' -> '{enhanced_query}'\n")
 
         results = search.rrf_search(enhanced_query, k, limit)
+
+    elif re_rank is not None:
+        results = search.rrf_search(query, k, limit * 5)
+
+        if results:
+            for i in range(len(results)):
+                rerank_score = gemini_client_document(query, re_rank, results[i])
+                results[i]["rerank_score"] = int(rerank_score)
+                sleep(5)
+
+        results = sorted(results, key=lambda x: x["rerank_score"], reverse=True)
+        results = results[:limit]
 
     else:
         results = search.rrf_search(query, k, limit)

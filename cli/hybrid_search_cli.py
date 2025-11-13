@@ -26,6 +26,7 @@ def main() -> None:
     rrf_search.add_argument("--k", type=int, default=60, help="Weight for low-rank vs high rank results")
     rrf_search.add_argument("--limit", type=int, default=5, help="Number of results to return")
     rrf_search.add_argument("--enhance", type=str, choices=["spell", "rewrite", "expand"], help="Query enhancement method")
+    rrf_search.add_argument("--rerank-method", type=str, choices=["individual"], help="LLM movie re-ranking")
 
 
     args = parser.parse_args()
@@ -55,10 +56,14 @@ def main() -> None:
                 print(f"   {res['document'][:100]}...")
                 print()
         case "rrf-search":
-            results = rrf_search_command(args.query, args.enhance, args.k, args.limit)
+            results = rrf_search_command(args.query, args.enhance, args.rerank_method, args.k, args.limit)
 
             for i, res in enumerate(results["results"], 1):
                 print(f"{i}. {res['title']}")
+
+                if args.rerank_method is not None:
+                    print(f"   Rerank Score: {res.get('rerank_score', 0):.3f}/10")
+
                 print(f"   RRF Score: {res.get('score', 0):.3f}")
                 if "bm25_score" in res.keys() and "semantic_score" in res.keys():
                     print(
