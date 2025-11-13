@@ -2,7 +2,7 @@ import os
 
 from search.keyword_search import InvertedIndex
 from search.chunked_semantic_search import ChunkedSemanticSearch
-from search.search_utils import DEFAULT_SEARCH_LIMIT, DEFAULT_ALPHA, MOVIES_DATA_PATH, load_movies
+from search.search_utils import DEFAULT_SEARCH_LIMIT, DEFAULT_ALPHA, MOVIES_DATA_PATH, load_movies, gemini_client
 
 
 class HybridSearch:
@@ -199,13 +199,20 @@ def weighted_search_command(query: str, alpha: float = DEFAULT_ALPHA, limit: int
     }
 
 
-def rrf_search_command(query: str, k: int, limit: int = DEFAULT_SEARCH_LIMIT) -> dict:
+def rrf_search_command(query: str, enhance: str, k: int, limit: int = DEFAULT_SEARCH_LIMIT) -> dict:
 
     movies = load_movies(MOVIES_DATA_PATH)
 
     search = HybridSearch(movies)
 
-    results = search.rrf_search(query, k, limit)
+    if enhance is not None:
+        enhanced_query = gemini_client(query, enhance)
+        print(f"Enhanced query ({enhance}): '{query}' -> '{enhanced_query}'\n")
+
+        results = search.rrf_search(enhanced_query, k, limit)
+
+    else:
+        results = search.rrf_search(query, k, limit)
 
     return {
         "original_query": query,

@@ -65,7 +65,7 @@ class InvertedIndex:
         token = self._tokenize_term(term)
 
         doc_count = len(self.docmap)
-        term_doc_count = len(self.index.get(token, 0))
+        term_doc_count = len(self.index.get(token, []))
 
         return math.log((doc_count + 1) / (term_doc_count + 1))
 
@@ -80,7 +80,7 @@ class InvertedIndex:
         token = self._tokenize_term(term)
 
         doc_count = len(self.docmap)
-        term_doc_count = len(self.index.get(token))
+        term_doc_count = len(self.index.get(token, []))
 
         return math.log((doc_count - term_doc_count + 0.5) / (term_doc_count + 0.5) + 1)
 
