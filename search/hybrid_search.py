@@ -1,11 +1,13 @@
 import os
 
-from tenacity import sleep
-
 from search.keyword_search import InvertedIndex
 from search.chunked_semantic_search import ChunkedSemanticSearch
-from search.search_utils import DEFAULT_SEARCH_LIMIT, DEFAULT_ALPHA, MOVIES_DATA_PATH, load_movies, gemini_client, \
-    gemini_client_document
+from search.llm_query import enhance_query
+from search.rerank import rerank
+from search.search_utils import (DEFAULT_SEARCH_LIMIT, DEFAULT_ALPHA,
+                                 MOVIES_DATA_PATH,
+                                 RRF_K,
+                                 SEARCH_MULTIPLIER, load_movies)
 
 
 class HybridSearch:
@@ -202,35 +204,37 @@ def weighted_search_command(query: str, alpha: float = DEFAULT_ALPHA, limit: int
     }
 
 
-def rrf_search_command(query: str, enhance: str, re_rank: str, k: int, limit: int = DEFAULT_SEARCH_LIMIT) -> dict:
+def rrf_search_command( query: str,
+    k: int = RRF_K,
+    enhance: str = None,
+    rerank_method: str = None,
+    limit: int = DEFAULT_SEARCH_LIMIT,) -> dict:
 
     movies = load_movies(MOVIES_DATA_PATH)
 
-    search = HybridSearch(movies)
+    searcher = HybridSearch(movies)
 
-    if enhance is not None:
-        enhanced_query = gemini_client(query, enhance)
-        print(f"Enhanced query ({enhance}): '{query}' -> '{enhanced_query}'\n")
+    original_query = query
+    enhanced_query = None
+    if enhance:
+        enhanced_query = enhance_query(query, method=enhance)
+        query = enhanced_query
 
-        results = search.rrf_search(enhanced_query, k, limit)
+    search_limit = limit * SEARCH_MULTIPLIER if rerank_method else limit
+    results = searcher.rrf_search(query, k, search_limit)
 
-    elif re_rank is not None:
-        results = search.rrf_search(query, k, limit * 5)
-
-        if results:
-            for i in range(len(results)):
-                rerank_score = gemini_client_document(query, re_rank, results[i])
-                results[i]["rerank_score"] = int(rerank_score)
-                sleep(5)
-
-        results = sorted(results, key=lambda x: x["rerank_score"], reverse=True)
-        results = results[:limit]
-
-    else:
-        results = search.rrf_search(query, k, limit)
+    reranked = False
+    if rerank_method:
+        results = rerank(query, results, method=rerank_method, limit=limit)
+        reranked = True
 
     return {
-        "original_query": query,
+        "original_query": original_query,
+        "enhanced_query": enhanced_query,
+        "enhance_method": enhance,
         "query": query,
+        "k": k,
+        "rerank_method": rerank_method,
+        "reranked": reranked,
         "results": results,
     }

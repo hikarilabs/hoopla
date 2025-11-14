@@ -11,6 +11,8 @@ load_dotenv()
 
 DEFAULT_SEARCH_LIMIT = 5
 DEFAULT_ALPHA = 0.5
+RRF_K = 60
+SEARCH_MULTIPLIER = 5
 SCORE_PRECISION = 3
 DOCUMENT_PREVIEW_LENGTH = 100
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -141,7 +143,7 @@ def gemini_client(query: str, enhance: str):
     return response.text
 
 
-def gemini_client_document(query:str, rerank_method: str, document: dict):
+def gemini_client_document(query:str, rerank_method: str, document: dict, document_list = None):
     api_key = os.environ.get("GEMINI_API_KEY")
     client = genai.Client(api_key=api_key)
 
@@ -163,8 +165,21 @@ def gemini_client_document(query:str, rerank_method: str, document: dict):
                     Give me ONLY the number in your response, no other text or explanation.
                     
                     Score:"""
+        case "batch":
+            prompt = f"""Rank these movies by relevance to the search query.
+            
+                    Query: "{query}"
+                
+                    Movies:
+                    {document_list}
+                
+                    Return ONLY the IDs in order of relevance (best match first). Return a valid JSON list, nothing else. For example:
+                
+                    [75, 12, 34, 2, 1]
+                    """
         case _:
             raise NotImplementedError("The value for rerank method is not supported. Valid values: individual")
+
 
     response = client.models.generate_content(
         model="gemini-2.0-flash-001",
