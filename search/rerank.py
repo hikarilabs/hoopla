@@ -4,6 +4,7 @@ from time import sleep
 
 from dotenv import load_dotenv
 from google import genai
+from sentence_transformers import CrossEncoder
 
 load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY")
@@ -79,6 +80,31 @@ Return ONLY the IDs in order of relevance (best match first). Return a valid JSO
         if doc_id in doc_map:
             reranked.append({**doc_map[doc_id], "batch_rank": i + 1})
 
+    reranked.sort(key=lambda x: x["batch_rank"], reverse=True)
+    return reranked[:limit]
+
+
+def llm_rank_cross_encoder(query, documents, limit):
+
+    if not documents:
+        return []
+
+    pairs = []
+
+    for document in documents:
+        pairs.append([query, f"{document.get('title', '')} - {document.get('document', '')}"])
+
+    cross_encoder = CrossEncoder("cross-encoder/ms-marco-TinyBERT-L2-v2")
+
+    scores = cross_encoder.predict(pairs)
+
+    reranked = []
+
+    for i, score in enumerate(scores):
+        reranked.append({**documents[i], "cross_encoder_rank": score})
+
+    reranked.sort(key=lambda x: x["cross_encoder_rank"], reverse=True)
+
     return reranked[:limit]
 
 
@@ -89,5 +115,7 @@ def rerank(
         return llm_rerank_individual(query, documents, limit)
     if method == "batch":
         return llm_rerank_batch(query, documents, limit)
+    if method == "cross_encoder":
+        return llm_rank_cross_encoder(query, documents, limit)
     else:
         return documents[:limit]
