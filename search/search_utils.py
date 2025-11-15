@@ -17,6 +17,7 @@ SCORE_PRECISION = 3
 DOCUMENT_PREVIEW_LENGTH = 100
 PROJECT_ROOT = Path(__file__).parent.parent
 MOVIES_DATA_PATH = PROJECT_ROOT / "data" / "movies.json"
+EVAL_DATA_PATH = PROJECT_ROOT / "data" / "golden_dataset.json"
 
 BM25_K1 = 1.5
 BM25_B = 0.7
