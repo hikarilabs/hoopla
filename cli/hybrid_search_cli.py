@@ -1,51 +1,87 @@
 import argparse
 import sys
-from pathlib import Path
 
+from pathlib import Path
 
 # Add the parent directory to Python path to find the search module
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from search.hybrid_search import normalize_command, weighted_search_command, rrf_search_command
+from search.hybrid_search import (
+    normalize_scores,
+    rrf_search_command,
+    weighted_search_command,
+)
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Hybrid Search CLI")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
-    normalize = subparsers.add_parser("normalize", help="Compute score normalization")
-    normalize.add_argument("numbers", type=float, nargs="+")
+    normalize_parser = subparsers.add_parser(
+        "normalize", help="Normalize a list of scores"
+    )
+    normalize_parser.add_argument(
+        "scores", nargs="+", type=float, help="List of scores to normalize"
+    )
 
-    weighted_search = subparsers.add_parser("weighted-search", help="Search using a weighted combination")
-    weighted_search.add_argument("query", type=str, help="User search query")
-    weighted_search.add_argument("--alpha", type=float, default=0.5, help="Weight for BM25 vs semantic")
-    weighted_search.add_argument("--limit", type=int, default=5, help="Number of results to return")
+    weighted_parser = subparsers.add_parser(
+        "weighted-search", help="Perform weighted hybrid search"
+    )
+    weighted_parser.add_argument("query", type=str, help="Search query")
+    weighted_parser.add_argument(
+        "--alpha",
+        type=float,
+        default=0.5,
+        help="Weight for BM25 vs semantic (0=all semantic, 1=all BM25, default=0.5)",
+    )
+    weighted_parser.add_argument(
+        "--limit", type=int, default=5, help="Number of results to return (default=5)"
+    )
 
-    rrf_search = subparsers.add_parser("rrf-search", help="Search using reciprocal rank fusion")
-    rrf_search.add_argument("query", type=str, help="User search query")
-    rrf_search.add_argument("--k", type=int, default=60, help="Weight for low-rank vs high rank results")
-    rrf_search.add_argument("--limit", type=int, default=5, help="Number of results to return")
-    rrf_search.add_argument("--enhance", type=str, choices=["spell", "rewrite", "expand"], help="Query enhancement method")
-    rrf_search.add_argument("--rerank-method", type=str, choices=["individual", "batch", "cross_encoder"], help="LLM movie re-ranking")
-
+    rrf_parser = subparsers.add_parser(
+        "rrf-search", help="Perform Reciprocal Rank Fusion search"
+    )
+    rrf_parser.add_argument("query", type=str, help="Search query")
+    rrf_parser.add_argument(
+        "-k",
+        type=int,
+        default=60,
+        help="RRF k parameter controlling weight distribution (default=60)",
+    )
+    rrf_parser.add_argument(
+        "--enhance",
+        type=str,
+        choices=["spell", "expand", "rewrite"],
+        help="Query enhancement method",
+    )
+    rrf_parser.add_argument(
+        "--rerank-method",
+        type=str,
+        choices=["individual", "batch", "cross_encoder"],
+        help="Reranking method",
+    )
+    rrf_parser.add_argument(
+        "--limit", type=int, default=5, help="Number of results to return (default=5)"
+    )
 
     args = parser.parse_args()
 
     match args.command:
         case "normalize":
-            scores = normalize_command(args.numbers)
-            for score in scores:
+            normalized = normalize_scores(args.scores)
+            for score in normalized:
                 print(f"* {score:.4f}")
         case "weighted-search":
-            results = weighted_search_command(args.query, args.alpha, args.limit)
+            result = weighted_search_command(args.query, args.alpha, args.limit)
 
             print(
-                f"Weighted Hybrid Search Results for '{results['query']}' (alpha={results['alpha']}):"
+                f"Weighted Hybrid Search Results for '{result['query']}' (alpha={result['alpha']}):"
             )
             print(
-                f"  Alpha {results['alpha']}: {int(results['alpha'] * 100)}% Keyword, {int((1 - results['alpha']) * 100)}% Semantic"
+                f"  Alpha {result['alpha']}: {int(result['alpha'] * 100)}% Keyword, {int((1 - result['alpha']) * 100)}% Semantic"
             )
-            for i, res in enumerate(results["results"], 1):
+            for i, res in enumerate(result["results"], 1):
                 print(f"{i}. {res['title']}")
                 print(f"   Hybrid Score: {res.get('score', 0):.3f}")
                 metadata = res.get("metadata", {})
@@ -80,6 +116,10 @@ def main() -> None:
                     print(f"   Rerank Score: {res.get('individual_score', 0):.3f}/10")
                 if "batch_rank" in res:
                     print(f"   Rerank Rank: {res.get('batch_rank', 0)}")
+                if "crossencoder_score" in res:
+                    print(
+                        f"   Cross Encoder Score: {res.get('crossencoder_score', 0):.3f}"
+                    )
                 print(f"   RRF Score: {res.get('score', 0):.3f}")
                 metadata = res.get("metadata", {})
                 ranks = []
@@ -91,7 +131,6 @@ def main() -> None:
                     print(f"   {', '.join(ranks)}")
                 print(f"   {res['document'][:100]}...")
                 print()
-
         case _:
             parser.print_help()
 

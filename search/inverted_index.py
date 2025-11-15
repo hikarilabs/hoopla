@@ -4,7 +4,7 @@ from collections import defaultdict, Counter
 
 
 from search.text_processor import process_text
-from search.search_utils import PROJECT_ROOT, BM25_K1, BM25_B, load_movies, DEFAULT_SEARCH_LIMIT, format_search_result, \
+from search.impl.search_utils_impl import PROJECT_ROOT, BM25_K1, BM25_B, load_movies, DEFAULT_SEARCH_LIMIT, \
     SCORE_PRECISION, MOVIES_DATA_PATH
 
 

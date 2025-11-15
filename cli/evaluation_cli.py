@@ -1,5 +1,4 @@
 import argparse
-import json
 import sys
 
 from pathlib import Path
@@ -9,8 +8,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from search.search_utils import EVAL_DATA_PATH, RRF_K
-from search.hybrid_search import rrf_search_command
+from search.evaluation import evaluate_command
 
 
 def main():
@@ -23,38 +21,17 @@ def main():
     )
 
     args = parser.parse_args()
-    limit = args.limit
+    result = evaluate_command(args.limit)
 
-    # run evaluation logic here
-    with open(EVAL_DATA_PATH, "r") as f:
-        eval_data = json.load(f)
-        evals = eval_data["test_cases"]
-
-    for eval in evals:
-
-        results = rrf_search_command(eval["query"], RRF_K, enhance = None, rerank_method = None, limit = limit)
-
-        if results:
-            retrieved_movies = []
-
-            for result in results["results"]:
-                retrieved_movies.append(result["title"])
-
-            relevant_movies = eval["relevant_docs"]
-
-            relevant_retrieved = 0
-
-            for movie in retrieved_movies:
-                if movie in relevant_movies:
-                    relevant_retrieved += 1
-
-            precision = relevant_retrieved / len(retrieved_movies)
-
-            print(f"- Query: {eval['query']}")
-            print(f"    - Precision@{limit}: {precision:.4f}")
-            print(f"    - Retrieved: {', '.join(retrieved_movies)}")
-            print(f"    - Relevant: {', '.join(relevant_movies)}")
-            print()
+    print(f"k={args.limit}\n")
+    for query, res in result["results"].items():
+        print(f"- Query: {query}")
+        print(f"  - Precision@{args.limit}: {res['precision']:.4f}")
+        print(f"  - Recall@{args.limit}: {res['recall']:.4f}")
+        print(f"  - F1 Score: {res['f1']:.4f}")
+        print(f"  - Retrieved: {', '.join(res['retrieved'])}")
+        print(f"  - Relevant: {', '.join(res['relevant'])}")
+        print()
 
 
 if __name__ == "__main__":

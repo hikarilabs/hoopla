@@ -1,10 +1,9 @@
 import json
-import re
 
 import numpy as np
 
-from search.semantic_search import SemanticSearch, cosine_similarity
-from search.search_utils import PROJECT_ROOT, MOVIES_DATA_PATH, load_movies, SCORE_PRECISION, DOCUMENT_PREVIEW_LENGTH, \
+from search.impl.semantic_search_impl import SemanticSearch, cosine_similarity
+from search.impl.search_utils_impl import PROJECT_ROOT, MOVIES_DATA_PATH, load_movies, SCORE_PRECISION, \
     DEFAULT_SEARCH_LIMIT, _semantic_chunk_text
 
 

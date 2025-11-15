@@ -1,5 +1,5 @@
 import string
-from search.search_utils import load_stop_words
+from search.impl.search_utils_impl import load_stop_words
 
 from nltk.stem import PorterStemmer
 
